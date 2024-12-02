@@ -9,10 +9,17 @@ dagstermill_notebook = define_dagstermill_asset(
     name = "dagstermill_notebook",
     notebook_path = file_relative_path(__file__,"../notebooks/hola.ipynb"),
     group_name = "Notebooks",
-    io_manager_key="io_manager",
+    io_manager_key="output_notebook_io_manager",
     ins={"test": AssetIn("asset_test")},
 )
 
+
+test2 = define_dagstermill_asset(
+    name = "test2",
+    notebook_path = file_relative_path(__file__,"../notebooks/hola2.ipynb"),
+    group_name = "Notebooks",
+    io_manager_key="output_notebook_io_manager",
+)
 
 @asset(group_name="Notebooks")
 def asset_test():
