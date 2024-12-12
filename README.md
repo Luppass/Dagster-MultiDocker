@@ -21,8 +21,8 @@ docker-compose stop dagster_user_code && docker-compose rm -f dagster_user_code 
 
 
 import os
-from dagster import ConfigurableIOManager, MetadataValue, InputContext, OutputContext
 import nbformat
+from dagster import ConfigurableIOManager, MetadataValue, InputContext, OutputContext
 
 class MyNotebookIOManager(ConfigurableIOManager):
     base_dir: str
@@ -31,11 +31,11 @@ class MyNotebookIOManager(ConfigurableIOManager):
         if obj is None:
             return
 
-        # Usar el nombre del output y añadir el prefijo "output-"
+        # Añadir prefijo "output-" al nombre del archivo
         output_name = context.name
         notebook_path = os.path.join(self.base_dir, f"output-{output_name}.ipynb")
 
-        # Guardar el notebook usando nbformat
+        # Guardar el notebook (obj es un dict)
         with open(notebook_path, "w", encoding="utf-8") as f:
             nbformat.write(obj, f)
 
@@ -44,7 +44,6 @@ class MyNotebookIOManager(ConfigurableIOManager):
         )
 
     def load_input(self, context: InputContext):
-        # Aquí también se debe reflejar el mismo patrón de nombre
         output_name = context.upstream_output.name
         notebook_path = os.path.join(self.base_dir, f"output-{output_name}.ipynb")
 
