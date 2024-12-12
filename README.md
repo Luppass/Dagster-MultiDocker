@@ -19,33 +19,17 @@ Ejecuta los siguientes comandos para reiniciar y reconstruir el contenedor afect
 ```bash
 docker-compose stop dagster_user_code && docker-compose rm -f dagster_user_code && docker-compose build --no-cache dagster_user_code && docker-compose up -d dagster_user_code
 
-
-import os
-import nbformat
-from dagster import ConfigurableIOManager, MetadataValue, InputContext, OutputContext
-
-class MyNotebookIOManager(ConfigurableIOManager):
-    base_dir: str
-
-    def handle_output(self, context: OutputContext, obj):
-        if obj is None:
-            return
-
-        # Añadir prefijo "output-" al nombre del archivo
-        output_name = context.name
-        notebook_path = os.path.join(self.base_dir, f"output-{output_name}.ipynb")
-
-        # Guardar el notebook (obj es un dict)
-        with open(notebook_path, "w", encoding="utf-8") as f:
-            nbformat.write(obj, f)
-
-        context.add_output_metadata(
-            {"notebook_path": MetadataValue.notebook(notebook_path)}
-        )
-
-    def load_input(self, context: InputContext):
-        output_name = context.upstream_output.name
-        notebook_path = os.path.join(self.base_dir, f"output-{output_name}.ipynb")
-
-        with open(notebook_path, "r", encoding="utf-8") as f:
-            return nbformat.read(f, as_version=4)
+def create_notebook_asset(notebook_name, input_path, output_path):
+    @asset(name=notebook_name)
+    def notebook_asset(context):
+        logger.info(f"Ejecutando notebook: {notebook_name}")
+        try:
+            pm.execute_notebook(input_path, output_path)
+            logger.info(f"Notebook ejecutado exitosamente: {notebook_name}")
+            
+            # Añadimos metadatos para mostrar el notebook en la UI de Dagster
+            context.add_output_metadata({"notebook": MetadataValue.notebook(output_path)})
+        except Exception as e:
+            logger.error(f"Error al ejecutar el notebook {notebook_name}: {e}")
+            raise e
+    return notebook_asset
