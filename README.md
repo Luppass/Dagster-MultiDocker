@@ -18,18 +18,3 @@ Ejecuta los siguientes comandos para reiniciar y reconstruir el contenedor afect
 
 ```bash
 docker-compose stop dagster_user_code && docker-compose rm -f dagster_user_code && docker-compose build --no-cache dagster_user_code && docker-compose up -d dagster_user_code
-
-def create_notebook_asset(notebook_name, input_path, output_path):
-    @asset(name=notebook_name)
-    def notebook_asset(context):
-        logger.info(f"Ejecutando notebook: {notebook_name}")
-        try:
-            pm.execute_notebook(input_path, output_path)
-            logger.info(f"Notebook ejecutado exitosamente: {notebook_name}")
-            
-            # Añadimos metadatos para mostrar el notebook en la UI de Dagster
-            context.add_output_metadata({"notebook": MetadataValue.notebook(output_path)})
-        except Exception as e:
-            logger.error(f"Error al ejecutar el notebook {notebook_name}: {e}")
-            raise e
-    return notebook_asset
